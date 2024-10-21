@@ -91,7 +91,7 @@ export function Home() {
     });
   };
 
-  const calculateProgress = (subject) => {
+  const calculateProgress = (subject: string) => {
     const totalQuestions = {
       English: 70,
       Math: 70,
