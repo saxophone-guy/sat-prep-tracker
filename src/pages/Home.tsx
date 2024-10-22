@@ -85,7 +85,9 @@ export function Home() {
       title: "You submitted the following values:",
       description: (
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(newEntry, null, 2)}</code>
+          <code className="text-white">
+            {JSON.stringify(newEntry, null, 2)}
+          </code>
         </pre>
       ),
     });
@@ -98,108 +100,147 @@ export function Home() {
       Reading: 70,
       Writing: 70,
     };
-    
+
     const total = totalQuestions[subject];
-    const completed = formData.reduce((acc, entry) => entry.subject === subject ? acc + entry.questionsDone : acc, 0);
-    
+    const completed = formData.reduce(
+      (acc, entry) =>
+        entry.subject === subject ? acc + entry.questionsDone : acc,
+      0,
+    );
+
     return (completed / total) * 100;
   };
 
   return (
-    <div className="flex justify-center p-8">
-      <div className="max-w-full xl:max-w-screen-lg lg:max-w-screen-md md:max-w-screen-sm sm:max-w-screen-xs">
-        <h1 className="text-4xl font-bold mb-4 text-center">SAT Prep Tracker</h1>
-        
-        <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border shadow mb-8" />
+    <div className="max-w-full xl:max-w-screen-lg lg:max-w-screen-md md:max-w-screen-sm sm:max-w-screen-xs flex justify-center p-8 mx-auto">
+      <div>
+        <h1 className="text-4xl font-bold mb-4 text-center">
+          SAT Prep Tracker
+        </h1>
+
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          className="rounded-md border shadow mb-8 max-w-64 mx-auto"
+        />
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <FormField control={form.control} name="selectedOption" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Select Action</FormLabel>
-                <RadioGroup defaultValue="questions" onValueChange={field.onChange}>
-                  <div className="flex items-center justify-center space-x-4">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="questions" id="questions" />
-                      <Label htmlFor="questions">Record Questions</Label>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
+            <FormField
+              control={form.control}
+              name="selectedOption"
+              render={({ field }) => (
+                <FormItem className="m-auto max-w-[300px] text-center">
+                  <FormLabel>Select Action</FormLabel>
+                  <RadioGroup
+                    defaultValue="questions"
+                    onValueChange={field.onChange}
+                  >
+                    <div className="flex items-center justify-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="questions" id="questions" />
+                        <Label htmlFor="questions">Record Questions</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="coverage" id="coverage" />
+                        <Label htmlFor="coverage">Cover Topic</Label>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="coverage" id="coverage" />
-                      <Label htmlFor="coverage">Cover Topic</Label>
-                    </div>
-                  </div>
-                </RadioGroup>
-              </FormItem>
-            )} />
+                  </RadioGroup>
+                </FormItem>
+              )}
+            />
 
             {/* Subject Dropdown */}
-            <FormField control={form.control} name="subject" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Select Subject</FormLabel>
-                <FormControl>
-                  <Select onValueChange={field.onChange}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select a subject" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Subjects</SelectLabel>
-                        {subjects.map((subject) => (
-                          <SelectItem key={subject} value={subject}>{subject}</SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
+            <FormField
+              control={form.control}
+              name="subject"
+              render={({ field }) => (
+                <FormItem className="mx-auto max-w-[180px] text-center">
+                  <FormLabel>Select Subject</FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a subject" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Subjects</SelectLabel>
+                          {subjects.map((subject) => (
+                            <SelectItem key={subject} value={subject}>
+                              {subject}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Topic Dropdown */}
-            <FormField control={form.control} name="topic" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Select Topic</FormLabel>
-                <FormControl>
-                  <Select onValueChange={field.onChange} disabled={!form.watch("subject")}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select a topic" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {form.watch("subject") && topics[form.watch("subject")].map((topic) => (
-                          <SelectItem key={topic} value={topic}>{topic}</SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
+            <FormField
+              control={form.control}
+              name="topic"
+              render={({ field }) => (
+                <FormItem className="max-w-[180px] mx-auto text-center">
+                  <FormLabel>Select Topic</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      disabled={!form.watch("subject")}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a topic" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {form.watch("subject") &&
+                            topics[form.watch("subject")].map((topic) => (
+                              <SelectItem key={topic} value={topic}>
+                                {topic}
+                              </SelectItem>
+                            ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Questions Done Input */}
             {form.watch("selectedOption") === "questions" && (
-              <FormField control={form.control} name="questionsDone" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Number of Questions Done</FormLabel>
-                  <FormControl><Input type="number" placeholder="Enter number" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
+              <FormField
+                control={form.control}
+                name="questionsDone"
+                render={({ field }) => (
+                  <FormItem className="max-w-[180px] text-center mx-auto text-center">
+                    <FormLabel>Number of Questions Done</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Enter number"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
-
-            <Button type="submit">Submit</Button>
+            <Button type="submit" className="ml-[calc(50%-36px-8px)]">
+              Submit
+            </Button>
           </form>
         </Form>
-
-        {/* Display Progress Overview */}
-        {subjects.map((subject) => (
-          <div key={subject} className="my-4">
-            <p className="font-semibold">{subject}:</p>
-            {/* Use the Progress component here */}
-            <Progress value={calculateProgress(subject)} />
-          </div>
-        ))}
       </div>
 
       {/* Display Date Information */}
@@ -214,20 +255,29 @@ export function Home() {
               <>
                 <p className="font-semibold mt-2">Previous Entries:</p>
                 <ul className="list-disc ml-5">
-                  {formData.filter(entry => entry.date === date.toLocaleDateString()).map((entry, index) => (
-                    <li key={index}>
-                      {entry.selectedOption === "questions"
-                        ? `${entry.questionsDone} questions in ${entry.subject} - ${entry.topic}`
-                        : `Covered ${entry.topic} in ${entry.subject}`}
-                    </li>
-                  ))}
+                  {formData
+                    .filter((entry) => entry.date === date.toLocaleDateString())
+                    .map((entry, index) => (
+                      <li key={index}>
+                        {entry.selectedOption === "questions"
+                          ? `${entry.questionsDone} questions in ${entry.subject} - ${entry.topic}`
+                          : `Covered ${entry.topic} in ${entry.subject}`}
+                      </li>
+                    ))}
                 </ul>
               </>
             )}
-          </div> 
-        </div> 
+          </div>
+          {/* Display Progress Overview */}
+          {subjects.map((subject) => (
+            <div key={subject} className="my-4 max-w-[360px] mx-auto">
+              <p className="font-semibold">{subject}:</p>
+              {/* Use the Progress component here */}
+              <Progress value={calculateProgress(subject)} />
+            </div>
+          ))}
+        </div>
       )}
-    </div> 
+    </div>
   );
 }
-
