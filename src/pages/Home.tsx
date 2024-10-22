@@ -95,7 +95,7 @@ export function Home() {
   };
 
   const calculateTopicProgress = (subject: string, topic: string) => {
-    const total = 70; // 70 questions per topic
+    const total = 730; // 730 questions per topic
     const completed = formData.reduce(
       (acc, entry) =>
         entry.subject === subject && entry.topic === topic
