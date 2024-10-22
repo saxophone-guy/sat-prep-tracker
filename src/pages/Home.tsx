@@ -28,6 +28,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { Card } from "@/components/ui/card";
 
 const subjects = ["Math", "English", "Reading", "Writing"];
 
@@ -93,22 +94,28 @@ export function Home() {
     });
   };
 
-  const calculateProgress = (subject: string) => {
-    const totalQuestions = {
-      English: 70,
-      Math: 70,
-      Reading: 70,
-      Writing: 70,
-    };
+  const calculateTopicProgress = (subject: string, topic: string) => {
+    const total = 70; // 70 questions per topic
+    const completed = formData.reduce(
+      (acc, entry) =>
+        entry.subject === subject && entry.topic === topic
+          ? acc + entry.questionsDone
+          : acc,
+      0
+    );
+    return (completed / total) * 100;
+  };
 
-    const total = totalQuestions[subject];
+  const calculateSubjectProgress = (subject: string) => {
+    const totalTopics = topics[subject].length;
+    const totalQuestions = totalTopics * 70; // Total questions for subject = number of topics * 70
+
     const completed = formData.reduce(
       (acc, entry) =>
         entry.subject === subject ? acc + entry.questionsDone : acc,
-      0,
+      0
     );
-
-    return (completed / total) * 100;
+    return (completed / totalQuestions) * 100;
   };
 
   return (
@@ -122,7 +129,7 @@ export function Home() {
           mode="single"
           selected={date}
           onSelect={setDate}
-          className="rounded-md border shadow-lg mb-8 max-w-64 mx-auto"
+          className="rounded-md border shadow-md mb-8 max-w-64 mx-auto"
         />
 
         <Form {...form}>
@@ -243,11 +250,10 @@ export function Home() {
         </Form>
       </div>
 
-      {/* Display Date Information */}
       {date && (
         <div className="w-1/3 ml-4">
           <h2 className="text-4xl font-bold text-center mb-4">Date Info</h2>
-          <div className="p-4 rounded-md shadow-lg text-center dark:bg-stone-900 dark:bg-opacity-[0.5]">
+          <Card className="p-4 rounded-md shadow-md text-center">
             <p className="font-semibold">Selected Date:</p>
             <p>{date.toLocaleDateString()}</p>
 
@@ -267,13 +273,19 @@ export function Home() {
                 </ul>
               </>
             )}
-          </div>
-          {/* Display Progress Overview */}
+          </Card>
+
+          {/* Display Subject and Topic Progress */}
           {subjects.map((subject) => (
             <div key={subject} className="my-4 max-w-[360px] mx-auto">
               <p className="font-semibold">{subject}:</p>
-              {/* Use the Progress component here */}
-              <Progress value={calculateProgress(subject)} />
+              <Progress value={calculateSubjectProgress(subject)} />
+              {topics[subject].map((topic) => (
+                <div key={topic} className="ml-4 my-2">
+                  <p className="text-sm font-medium">{topic}:</p>
+                  <Progress value={calculateTopicProgress(subject, topic)} />
+                </div>
+              ))}
             </div>
           ))}
         </div>
@@ -281,3 +293,4 @@ export function Home() {
     </div>
   );
 }
+
