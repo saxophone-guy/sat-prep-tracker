@@ -84,7 +84,7 @@ export function Home() {
     toast({
       title: "You submitted the following values:",
       description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+        <pre className="mt-2 w-[340px] rounded-md bg-stone-900 p-4">
           <code className="text-white">
             {JSON.stringify(newEntry, null, 2)}
           </code>
@@ -122,7 +122,7 @@ export function Home() {
           mode="single"
           selected={date}
           onSelect={setDate}
-          className="rounded-md border shadow mb-8 max-w-64 mx-auto"
+          className="rounded-md border shadow-lg mb-8 max-w-64 mx-auto"
         />
 
         <Form {...form}>
@@ -246,8 +246,8 @@ export function Home() {
       {/* Display Date Information */}
       {date && (
         <div className="w-1/3 ml-4">
-          <h2 className="text-4xl font-bold text-center">Date Info</h2>
-          <div className="p-4 rounded-md shadow text-center">
+          <h2 className="text-4xl font-bold text-center mb-4">Date Info</h2>
+          <div className="p-4 rounded-md shadow-lg text-center dark:bg-stone-900 dark:bg-opacity-[0.5]">
             <p className="font-semibold">Selected Date:</p>
             <p>{date.toLocaleDateString()}</p>
 
