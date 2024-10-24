@@ -115,7 +115,7 @@ export function Home() {
     toast({
       title: "Entry Saved Successfully",
       description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-stone-950 p-4">
+        <pre className="mt-2 w-[340px] rounded-lg bg-stone-950 p-4">
           <code className="text-white">{JSON.stringify(newEntry, null, 2)}</code>
         </pre>
       ),
@@ -201,7 +201,7 @@ export function Home() {
           mode="single"
           selected={date}
           onSelect={setDate}
-          className="rounded-md border shadow-md mb-8 max-w-64 mx-auto"
+          className="rounded-lg border shadow-md mb-8 max-w-64 mx-auto"
         />
 
         <Form {...form}>
@@ -326,7 +326,7 @@ export function Home() {
         <h2 className="text-4xl font-bold text-center mb-4">Progress Tracker</h2>
         
         {/* Date Information Card */}
-        <Card className="p-4 rounded-md shadow-md text-center mb-4">
+        <Card className="p-4 rounded-lg shadow-md text-center mb-4">
           <p className="font-semibold">Selected Date:</p>
           <p>{date?.toLocaleDateString()}</p>
 
