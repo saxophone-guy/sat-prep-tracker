@@ -1,7 +1,7 @@
-// app/page.tsx
 "use client";
 
 import * as React from "react";
+import { motion } from "framer-motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -30,6 +30,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
+import { usePageTransition } from "@/lib/usePageTransition";  // Assuming this hook is available
 
 const subjects = ["Math", "English", "Reading", "Writing"];
 
@@ -67,6 +68,8 @@ type Settings = {
 };
 
 export function Home() {
+  const animation = usePageTransition("/");  // Hook to manage page transitions
+
   // Form initialization with useForm hook
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -192,7 +195,7 @@ export function Home() {
   );
 
   return (
-    <div className="max-w-full xl:max-w-screen-lg lg:max-w-screen-md md:max-w-screen-sm sm:max-w-screen-xs flex justify-center p-8 mx-auto">
+    <motion.div {...animation} className="max-w-full xl:max-w-screen-lg lg:max-w-screen-md md:max-w-screen-sm sm:max-w-screen-xs flex justify-center p-8 mx-auto">
       {/* Form Section */}
       <div className="w-1/2 pr-4">
         <h1 className="text-4xl font-bold mb-4 text-center">SAT Prep Tracker</h1>
@@ -266,24 +269,21 @@ export function Home() {
               control={form.control}
               name="topic"
               render={({ field }) => (
-                <FormItem className="max-w-[180px] mx-auto text-center">
+                <FormItem className="mx-auto max-w-[180px] text-center">
                   <FormLabel>Select Topic</FormLabel>
                   <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      disabled={!form.watch("subject")}
-                    >
+                    <Select onValueChange={field.onChange}>
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select a topic" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          {form.watch("subject") &&
-                            topics[form.watch("subject")].map((topic) => (
-                              <SelectItem key={topic} value={topic}>
-                                {topic}
-                              </SelectItem>
-                            ))}
+                          <SelectLabel>Topics</SelectLabel>
+                          {topics[form.getValues().subject]?.map((topic) => (
+                            <SelectItem key={topic} value={topic}>
+                              {topic}
+                            </SelectItem>
+                          ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -294,63 +294,36 @@ export function Home() {
             />
 
             {/* Questions Done Input */}
-            {form.watch("selectedOption") === "questions" && (
-              <FormField
-                control={form.control}
-                name="questionsDone"
-                render={({ field }) => (
-                  <FormItem className="max-w-[180px] text-center mx-auto">
-                    <FormLabel>Number of Questions Done</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter number"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+            <FormField
+              control={form.control}
+              name="questionsDone"
+              render={({ field }) => (
+                <FormItem className="mx-auto max-w-[180px]">
+                  <FormLabel>Questions Done</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Questions done"
+                      type="number"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            <Button type="submit" className="mx-auto block">
-              Submit
-            </Button>
+            {/* Submit Button */}
+            <Button type="submit" className="w-full">Save Progress</Button>
           </form>
         </Form>
       </div>
 
-      {/* Progress Tracking Section */}
-      <div className="w-1/2 ml-4">
-        <h2 className="text-4xl font-bold text-center mb-4">Progress Tracker</h2>
-        
-        {/* Date Information Card */}
-        <Card className="p-4 rounded-lg shadow-md text-center mb-4">
-          <p className="font-semibold">Selected Date:</p>
-          <p>{date?.toLocaleDateString()}</p>
-
-          {formData.length > 0 && (
-            <>
-              <p className="font-semibold mt-2">Previous Entries:</p>
-              <ul className="list-disc ml-5">
-                {formData
-                  .filter((entry) => entry.date === date?.toLocaleDateString())
-                  .map((entry, index) => (
-                    <li key={index} className="text-left">
-                      {entry.selectedOption === "questions"
-                        ? `${entry.questionsDone} questions in ${entry.subject} - ${entry.topic}`
-                        : `Covered ${entry.topic} in ${entry.subject}`}
-                    </li>
-                  ))}
-              </ul>
-            </>
-          )}
-        </Card>
-
-        {/* Progress Bars Section */}
+      {/* Progress Section */}
+      <div className="w-1/2">
         <ProgressSection />
       </div>
-    </div>
+    </motion.div>
   );
 }
+
+export default Home;
