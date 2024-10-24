@@ -1,3 +1,4 @@
+// app/page.tsx
 "use client";
 
 import * as React from "react";
@@ -50,7 +51,23 @@ const FormSchema = z.object({
   topic: z.string(),
 });
 
+// Type for form data entries
+type FormEntry = {
+  date: string;
+  questionsDone: number;
+  selectedOption: "questions" | "coverage";
+  subject: string;
+  topic: string;
+};
+
+// Type for settings
+type Settings = {
+  questionsPerSubject: Record<string, number>;
+  topics: Record<string, any>;
+};
+
 export function Home() {
+  // Form initialization with useForm hook
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -61,15 +78,28 @@ export function Home() {
     },
   });
 
+  // State management
   const [date, setDate] = React.useState<Date | undefined>(new Date());
-  const [formData, setFormData] = React.useState<any[]>(() => {
-    const storedData = localStorage.getItem("satPrepData");
-    return storedData ? JSON.parse(storedData) : [];
+  const [formData, setFormData] = React.useState<FormEntry[]>(() => {
+    if (typeof window !== 'undefined') {
+      const storedData = localStorage.getItem("satPrepData");
+      return storedData ? JSON.parse(storedData) : [];
+    }
+    return [];
   });
 
+  const [settings, setSettings] = React.useState<Settings>(() => {
+    if (typeof window !== 'undefined') {
+      const storedSettings = localStorage.getItem("satPrepSettings");
+      return storedSettings ? JSON.parse(storedSettings) : { questionsPerSubject: {}, topics: {} };
+    }
+    return { questionsPerSubject: {}, topics: {} };
+  });
+
+  // Form submission handler
   const handleSubmit = (data: z.infer<typeof FormSchema>) => {
     const newEntry = {
-      date: date?.toLocaleDateString(),
+      date: date?.toLocaleDateString() || new Date().toLocaleDateString(),
       questionsDone: data.questionsDone || 0,
       selectedOption: data.selectedOption,
       subject: data.subject,
@@ -83,19 +113,26 @@ export function Home() {
     });
 
     toast({
-      title: "You submitted the following values:",
+      title: "Entry Saved Successfully",
       description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-stone-900 p-4">
-          <code className="text-white">
-            {JSON.stringify(newEntry, null, 2)}
-          </code>
+        <pre className="mt-2 w-[340px] rounded-md bg-stone-950 p-4">
+          <code className="text-white">{JSON.stringify(newEntry, null, 2)}</code>
         </pre>
       ),
     });
+
+    // Reset form after submission
+    form.reset({
+      questionsDone: 0,
+      selectedOption: "questions",
+      subject: "",
+      topic: "",
+    });
   };
 
+  // Progress calculation functions
   const calculateTopicProgress = (subject: string, topic: string) => {
-    const total = 730; // 730 questions per topic
+    const total = settings.questionsPerSubject[subject] || 730;
     const completed = formData.reduce(
       (acc, entry) =>
         entry.subject === subject && entry.topic === topic
@@ -103,27 +140,62 @@ export function Home() {
           : acc,
       0
     );
-    return (completed / total) * 100;
+    return Math.min((completed / total) * 100, 100);
   };
 
   const calculateSubjectProgress = (subject: string) => {
     const totalTopics = topics[subject].length;
-    const totalQuestions = totalTopics * 70; // Total questions for subject = number of topics * 70
+    const totalQuestions = (settings.questionsPerSubject[subject] || 70) * totalTopics;
 
     const completed = formData.reduce(
       (acc, entry) =>
         entry.subject === subject ? acc + entry.questionsDone : acc,
       0
     );
-    return (completed / totalQuestions) * 100;
+    return Math.min((completed / totalQuestions) * 100, 100);
   };
+
+  // Progress visualization component
+  const ProgressSection = () => (
+    <div className="mt-4 space-y-6">
+      {subjects.map((subject) => (
+        <Card key={subject} className="p-4">
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold">{subject}</h3>
+              <span className="text-sm text-gray-500">
+                {Math.round(calculateSubjectProgress(subject))}%
+              </span>
+            </div>
+            <Progress value={calculateSubjectProgress(subject)} className="h-2" />
+          </div>
+          
+          <div className="space-y-3 pl-4">
+            {topics[subject].map((topic) => (
+              <div key={topic}>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm">{topic}</span>
+                  <span className="text-xs text-gray-500">
+                    {Math.round(calculateTopicProgress(subject, topic))}%
+                  </span>
+                </div>
+                <Progress 
+                  value={calculateTopicProgress(subject, topic)} 
+                  className="h-1.5"
+                />
+              </div>
+            ))}
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
 
   return (
     <div className="max-w-full xl:max-w-screen-lg lg:max-w-screen-md md:max-w-screen-sm sm:max-w-screen-xs flex justify-center p-8 mx-auto">
-      <div>
-        <h1 className="text-4xl font-bold mb-4 text-center">
-          SAT Prep Tracker
-        </h1>
+      {/* Form Section */}
+      <div className="w-1/2 pr-4">
+        <h1 className="text-4xl font-bold mb-4 text-center">SAT Prep Tracker</h1>
 
         <Calendar
           mode="single"
@@ -133,10 +205,8 @@ export function Home() {
         />
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            {/* Action Selection */}
             <FormField
               control={form.control}
               name="selectedOption"
@@ -162,7 +232,7 @@ export function Home() {
               )}
             />
 
-            {/* Subject Dropdown */}
+            {/* Subject Selection */}
             <FormField
               control={form.control}
               name="subject"
@@ -191,7 +261,7 @@ export function Home() {
               )}
             />
 
-            {/* Topic Dropdown */}
+            {/* Topic Selection */}
             <FormField
               control={form.control}
               name="topic"
@@ -229,7 +299,7 @@ export function Home() {
                 control={form.control}
                 name="questionsDone"
                 render={({ field }) => (
-                  <FormItem className="max-w-[180px] text-center mx-auto text-center">
+                  <FormItem className="max-w-[180px] text-center mx-auto">
                     <FormLabel>Number of Questions Done</FormLabel>
                     <FormControl>
                       <Input
@@ -243,54 +313,44 @@ export function Home() {
                 )}
               />
             )}
-            <Button type="submit" className="ml-[calc(50%-36px-8px)]">
+
+            <Button type="submit" className="mx-auto block">
               Submit
             </Button>
           </form>
         </Form>
       </div>
 
-      {date && (
-        <div className="w-1/3 ml-4">
-          <h2 className="text-4xl font-bold text-center mb-4">Date Info</h2>
-          <Card className="p-4 rounded-md shadow-md text-center">
-            <p className="font-semibold">Selected Date:</p>
-            <p>{date.toLocaleDateString()}</p>
+      {/* Progress Tracking Section */}
+      <div className="w-1/2 ml-4">
+        <h2 className="text-4xl font-bold text-center mb-4">Progress Tracker</h2>
+        
+        {/* Date Information Card */}
+        <Card className="p-4 rounded-md shadow-md text-center mb-4">
+          <p className="font-semibold">Selected Date:</p>
+          <p>{date?.toLocaleDateString()}</p>
 
-            {formData.length > 0 && (
-              <>
-                <p className="font-semibold mt-2">Previous Entries:</p>
-                <ul className="list-disc ml-5">
-                  {formData
-                    .filter((entry) => entry.date === date.toLocaleDateString())
-                    .map((entry, index) => (
-                      <li key={index}>
-                        {entry.selectedOption === "questions"
-                          ? `${entry.questionsDone} questions in ${entry.subject} - ${entry.topic}`
-                          : `Covered ${entry.topic} in ${entry.subject}`}
-                      </li>
-                    ))}
-                </ul>
-              </>
-            )}
-          </Card>
+          {formData.length > 0 && (
+            <>
+              <p className="font-semibold mt-2">Previous Entries:</p>
+              <ul className="list-disc ml-5">
+                {formData
+                  .filter((entry) => entry.date === date?.toLocaleDateString())
+                  .map((entry, index) => (
+                    <li key={index} className="text-left">
+                      {entry.selectedOption === "questions"
+                        ? `${entry.questionsDone} questions in ${entry.subject} - ${entry.topic}`
+                        : `Covered ${entry.topic} in ${entry.subject}`}
+                    </li>
+                  ))}
+              </ul>
+            </>
+          )}
+        </Card>
 
-          {/* Display Subject and Topic Progress */}
-          {subjects.map((subject) => (
-            <div key={subject} className="my-4 max-w-[360px] mx-auto">
-              <p className="font-semibold">{subject}:</p>
-              <Progress value={calculateSubjectProgress(subject)} />
-              {topics[subject].map((topic) => (
-                <div key={topic} className="ml-4 my-2">
-                  <p className="text-sm font-medium">{topic}:</p>
-                  <Progress value={calculateTopicProgress(subject, topic)} />
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
+        {/* Progress Bars Section */}
+        <ProgressSection />
+      </div>
     </div>
   );
 }
-
